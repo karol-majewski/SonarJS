@@ -22,6 +22,7 @@ package com.sonar.javascript.it.plugin;
 import com.sonar.orchestrator.Orchestrator;
 import com.sonar.orchestrator.build.SonarScanner;
 import com.sonar.orchestrator.locator.FileLocation;
+import com.sonar.orchestrator.locator.MavenLocation;
 import java.io.File;
 import java.util.List;
 import javax.annotation.CheckForNull;
@@ -56,6 +57,7 @@ import static java.util.Collections.singletonList;
   SonarLintTestCustomNodeJS.class,
   TslintExternalReportTest.class,
   TypeScriptAnalysisTest.class,
+  TypeScriptRuleTest.class,
   TypeScriptVersionsTest.class
 })
 public final class Tests {
@@ -70,6 +72,7 @@ public final class Tests {
   public static final Orchestrator ORCHESTRATOR = Orchestrator.builderEnv()
     .setSonarVersion(System.getProperty("sonar.runtimeVersion", "LATEST_RELEASE"))
     .addPlugin(JAVASCRIPT_PLUGIN_LOCATION)
+    .addPlugin(MavenLocation.of("org.sonarsource.sonar-lits-plugin", "sonar-lits-plugin", "0.8.0.1209"))
     .restoreProfileAtStartup(FileLocation.ofClasspath("/empty-js-profile.xml"))
     .restoreProfileAtStartup(FileLocation.ofClasspath("/empty-ts-profile.xml"))
     .restoreProfileAtStartup(FileLocation.ofClasspath("/profile-javascript-custom-rules.xml"))
