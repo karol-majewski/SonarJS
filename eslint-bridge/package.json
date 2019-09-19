@@ -40,8 +40,8 @@
   },
   "dependencies": {
     "@types/eslint-scope": "3.7.0",
-    "@typescript-eslint/eslint-plugin": "2.0.0",
-    "@typescript-eslint/parser": "2.0.0",
+    "@typescript-eslint/eslint-plugin": "2.3.2",
+    "@typescript-eslint/parser": "2.3.2",
     "babel-eslint": "10.0.1",
     "body-parser": "1.18.3",
     "eslint": "6.4.0",
