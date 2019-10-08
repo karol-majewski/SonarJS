@@ -32,8 +32,8 @@ build_task:
     cluster_name: cirrus-ci-lt-cluster
     zone: us-central1-a
     namespace: default
-    cpu: 2
-    memory: 2G
+    cpu: 4
+    memory: 4G
   maven_cache:
     folder: ~/.m2/repository
   build_script:
@@ -54,8 +54,8 @@ qa_task:
     cluster_name: cirrus-ci-lt-cluster
     zone: us-central1-a
     namespace: default
-    cpu: 2
-    memory: 2G
+    cpu: 4
+    memory: 4G
   maven_cache:
     folder: ~/.m2/repository
   submodules_script:
