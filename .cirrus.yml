@@ -61,8 +61,8 @@ qa_task:
   build_script:
     - source cirrus-env QA
     - source set_maven_build_version $BUILD_NUMBER
-    - cd its/plugin
     - export SONARSOURCE_QA=true
+    - cd its/plugin
     - mvn verify -Dsonar.runtimeVersion=LATEST_RELEASE -Dmaven.test.redirectTestOutputToFile=false -B -e -V
   cleanup_before_cache_script:
     - rm -rf "$HOME/.m2/repository/org/sonarsource/"
