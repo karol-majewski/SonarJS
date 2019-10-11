@@ -66,12 +66,14 @@ build_win_task:
   depends_on:
     - build
   <<: *WINDOWS_VM_DEFINITION
+  only_if: $CIRRUS_PR != ""
   build_script:
     - mvn.cmd test
 
 plugin_qa_task:
   depends_on:
     - build
+  only_if: $CIRRUS_PR != ""
   gke_container:
     dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
@@ -93,6 +95,7 @@ plugin_qa_task:
 plugin_qa_nodejs12_task:
   depends_on:
     - build
+  only_if: $CIRRUS_PR != ""
   gke_container:
     dockerfile: .cirrus/nodejs-12.Dockerfile
     <<: *CONTAINER_DEFINITION
@@ -108,17 +111,11 @@ plugin_qa_nodejs12_task:
   cleanup_before_cache_script:
     - rm -rf "$HOME/.m2/repository/org/sonarsource/"
 
-plugin_qa_win_task:
-  <<: *WINDOWS_VM_DEFINITION
-  qa_script:
-    - source cirrus-env QA
-    - source set_maven_build_version $BUILD_NUMBER
-    - cd its/plugin
-    - mvn verify -Dsonar.runtimeVersion=${SQ_VERSION} -Dmaven.test.redirectTestOutputToFile=false -B -e -V
 
 ruling_task:
   depends_on:
     - build
+  only_if: $CIRRUS_PR != ""
   gke_container:
     dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
@@ -147,6 +144,7 @@ promote_task:
   depends_on:
     - plugin_qa
     - ruling
+  only_if: $CIRRUS_PR != ""
   gke_container:
     dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
