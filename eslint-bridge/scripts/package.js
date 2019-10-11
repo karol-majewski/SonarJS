@@ -7,18 +7,18 @@ const path = require('path');
 const os = require('os');
 
 async function jar() {
-    const {stdout: packOut, stderr: packErr} = await exec('npm pack');
+    const {stdout: packOut, stderr: packErr} = await exec('yarn pack');
     console.error(packErr);
-    const packagePath = path.resolve(packOut.trim());
+    const packagePath = path.resolve("eslint-bridge-v1.0.0.tgz");
     if (!fs.existsSync(packagePath)) {
         throw new Error(`${packagePath} doesn't exists!`);
     }
     const eslintBridgeDir = process.cwd();
     const tmpdir = getTmpDir();
     process.chdir(tmpdir);
-    console.log('calling npm install in', tmpdir);
+    console.log('calling yarn add in', tmpdir);
     console.log(packagePath);
-    const {stdout: installOut, stderr: installErr} = await exec(`npm install ${packagePath}`);
+    const {stdout: installOut, stderr: installErr} = await exec(`yarn add ${packagePath}`);
     console.log(installOut);
     console.error(installErr);
     const target = path.join(eslintBridgeDir, 'target', 'classes');
