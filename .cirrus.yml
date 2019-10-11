@@ -14,8 +14,7 @@ env:
   BURGR_PASSWORD: ENCRYPTED[!83e130718e92b8c9de7c5226355f730e55fb46e45869149a9223e724bb99656878ef9684c5f8cfef434aa716e87f4cf2!]
 
 container_definition: &CONTAINER_DEFINITION
-  builder_image_project: language-team
-  builder_image_name: docker-builder-lt-v1
+  image: gcr.io/language-team/base:v1
   cluster_name: cirrus-ci-lt-cluster
   zone: us-central1-a
   namespace: default
@@ -42,7 +41,6 @@ win_vm_definition: &WINDOWS_VM_DEFINITION
 
 build_task:
   gke_container:
-    dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
     cpu: 3
     memory: 4G
@@ -73,7 +71,6 @@ plugin_qa_task:
   depends_on:
     - build
   gke_container:
-    dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
     cpu: 3
     memory: 8G
@@ -94,7 +91,6 @@ plugin_qa_nodejs12_task:
   depends_on:
     - build
   gke_container:
-    dockerfile: .cirrus/nodejs-12.Dockerfile
     <<: *CONTAINER_DEFINITION
     cpu: 3
     memory: 8G
@@ -108,21 +104,10 @@ plugin_qa_nodejs12_task:
   cleanup_before_cache_script:
     - rm -rf "$HOME/.m2/repository/org/sonarsource/"
 
-plugin_qa_win_task:
-  depends_on:
-    - build
-  <<: *WINDOWS_VM_DEFINITION
-  env:
-    SONARSOURCE_QA: true
-  qa_script:
-    - cd its\plugin
-    - mvn.cmd verify -Dsonar.runtimeVersion=LATEST_RELEASE -Dmaven.test.redirectTestOutputToFile=false -B -e -V
-
 ruling_task:
   depends_on:
     - build
   gke_container:
-    dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
     cpu: 4
     memory: 12G
@@ -150,7 +135,6 @@ promote_task:
     - plugin_qa
     - ruling
   gke_container:
-    dockerfile: .cirrus/nodejs-lts.Dockerfile
     <<: *CONTAINER_DEFINITION
     cpu: 1
     memory: 1G

@@ -86,7 +86,7 @@
     <gson.version>2.6.2</gson.version>
     <analyzer-commons.version>1.11.0.541</analyzer-commons.version>
     <node.version>v10.16.3</node.version>
-    <yarn.version>v1.10.1</yarn.version>
+    <yarn.version>v1.19.1</yarn.version>
 
     <artifactsToPublish>${project.groupId}:sonar-javascript-plugin:jar</artifactsToPublish>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -288,12 +288,7 @@
         <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
-          <version>1.6</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>1.6.0</version>
+          <version>1.8.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
