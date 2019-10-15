@@ -248,6 +248,25 @@ public class TypeScriptSensorTest {
   }
 
   @Test
+  public void should_send_content_when_not_utf8() throws Exception {
+    File baseDir = tempFolder.newDir();
+    SensorContextTester ctx = SensorContextTester.create(baseDir);
+    String content = "if (cond)\ndoFoo(); \nelse \ndoFoo();";
+    DefaultInputFile inputFile = new TestInputFileBuilder("moduleKey", "dir/file.ts")
+      .setLanguage("ts")
+      .setCharset(StandardCharsets.ISO_8859_1)
+      .setContents(content)
+      .build();
+    ctx.fileSystem().add(inputFile);
+    Files.write(baseDir.toPath().resolve("tsconfig.json"), singleton("{}"));
+
+    ArgumentCaptor<AnalysisRequest> captor = ArgumentCaptor.forClass(AnalysisRequest.class);
+    createSensor().execute(ctx);
+    verify(eslintBridgeServerMock).analyzeTypeScript(captor.capture());
+    assertThat(captor.getValue().fileContent).isEqualTo(content );
+  }
+
+  @Test
   public void should_abort_when_missing_typescript() throws Exception {
     AnalysisResponse parseError = new AnalysisResponse();
     parseError.parsingError = new EslintBridgeServer.ParsingError();
@@ -257,8 +276,8 @@ public class TypeScriptSensorTest {
     createInputFile(context, "dir/file1.ts");
     createInputFile(context, "dir/file2.ts");
     createSensor().execute(context);
-    assertThat(logTester.logs(LoggerLevel.ERROR)).contains("Failed to analyze file [dir/file1.ts]: Cannot find module 'typescript'");
-    assertThat(logTester.logs(LoggerLevel.ERROR)).doesNotContain("Failed to analyze file [dir/file2.ts]: Cannot find module 'typescript'");
+    assertThat(logTester.logs(LoggerLevel.ERROR)).containsOnlyOnce("Cannot find module 'typescript'");
+    assertThat(logTester.logs(LoggerLevel.ERROR)).doesNotContain("Failed to analyze file [dir/file1.ts]: Cannot find module 'typescript'");
     assertThat(logTester.logs(LoggerLevel.ERROR)).contains("TypeScript dependency was not found and it is required for analysis.");
     // assert that analysis was interrupted after first file
     verify(eslintBridgeServerMock, times(1)).analyzeTypeScript(any());
@@ -274,10 +293,12 @@ public class TypeScriptSensorTest {
     createInputFile(context, "dir/file1.ts");
     createInputFile(context, "dir/file2.ts");
     createSensor().execute(context);
-    assertThat(logTester.logs(LoggerLevel.ERROR)).contains(
-        "Failed to analyze file [dir/file1.ts]: You are using version of TypeScript 1.2.3 which is not supported; supported versions >=4.5.6");
+    assertThat(logTester.logs(LoggerLevel.ERROR)).containsOnlyOnce(
+        "You are using version of TypeScript 1.2.3 which is not supported; supported versions >=4.5.6");
+    assertThat(logTester.logs(LoggerLevel.ERROR)).containsOnlyOnce(
+        "If it's not possible to upgrade version of TypeScript used by the project, consider installing supported TypeScript version just for the time of analysis");
     assertThat(logTester.logs(LoggerLevel.ERROR)).doesNotContain(
-        "Failed to analyze file [dir/file2.ts]: You are using version of TypeScript 1.2.3 which is not supported; supported versions >=4.5.6");
+        "Failed to analyze file [dir/file1.ts]: You are using version of TypeScript 1.2.3 which is not supported; supported versions >=4.5.6");
     // assert that analysis was interrupted after first file
     verify(eslintBridgeServerMock, times(1)).analyzeTypeScript(any());
   }
@@ -290,6 +311,14 @@ public class TypeScriptSensorTest {
     DefaultInputFile file2 = inputFileFromResource(context, baseDir, "dir2/file.ts");
     DefaultInputFile file3 = inputFileFromResource(context, baseDir, "dir3/file.ts");
     inputFileFromResource(context, baseDir, "noconfig.ts");
+
+    when(eslintBridgeServerMock.tsConfigFiles(absolutePath(baseDir,"dir1/tsconfig.json")))
+      .thenReturn(new String[]{ file1.absolutePath() });
+    when(eslintBridgeServerMock.tsConfigFiles(absolutePath(baseDir,"dir2/tsconfig.json")))
+      .thenReturn(new String[]{ file2.absolutePath() });
+    when(eslintBridgeServerMock.tsConfigFiles(absolutePath(baseDir,"dir3/tsconfig.json")))
+      .thenReturn(new String[]{ file3.absolutePath() });
+
     ArgumentCaptor<AnalysisRequest> captor = ArgumentCaptor.forClass(AnalysisRequest.class);
     createSensor().execute(context);
     verify(eslintBridgeServerMock, times(3)).analyzeTypeScript(captor.capture());
@@ -299,6 +328,10 @@ public class TypeScriptSensorTest {
       file3.absolutePath()
     );
     verify(eslintBridgeServerMock, times(3)).newTsConfig();
+  }
+
+  private String absolutePath(Path baseDir, String relativePath) {
+    return new File(baseDir.toFile(), relativePath).getAbsolutePath();
   }
 
   private DefaultInputFile inputFileFromResource(SensorContextTester context, Path baseDir, String file) throws IOException {
@@ -382,6 +415,7 @@ public class TypeScriptSensorTest {
   private static DefaultInputFile createInputFile(SensorContextTester context, String relativePath) {
     DefaultInputFile inputFile = new TestInputFileBuilder("moduleKey", relativePath)
       .setLanguage("ts")
+      .setCharset(StandardCharsets.UTF_8)
       .setContents("if (cond)\ndoFoo(); \nelse \ndoFoo();")
       .build();
     context.fileSystem().add(inputFile);

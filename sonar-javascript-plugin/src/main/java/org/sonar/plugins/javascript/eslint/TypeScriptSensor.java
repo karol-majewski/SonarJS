@@ -110,7 +110,7 @@ public class TypeScriptSensor extends AbstractEslintSensor {
   }
 
   private void splitAnalysisByTsConfig(List<InputFile> inputFiles) {
-    Map<String, List<InputFile>> filesByTsConfig = TsConfigFile.inputFilesByTsConfig(tsconfigs, inputFiles);
+    Map<String, List<InputFile>> filesByTsConfig = TsConfigFile.inputFilesByTsConfig(tsconfigs, inputFiles, eslintBridgeServer);
     for (Map.Entry<String, List<InputFile>> entry : filesByTsConfig.entrySet()) {
       String tsConfigFile = entry.getKey();
       List<InputFile> files = entry.getValue();
@@ -138,7 +138,7 @@ public class TypeScriptSensor extends AbstractEslintSensor {
 
   private void analyze(InputFile file, List<String> tsConfigs) {
     try {
-      String fileContent = isSonarLint(context) ? file.contents() : null;
+      String fileContent = shouldSendFileContent(file) ? file.contents() : null;
       AnalysisRequest request = new AnalysisRequest(file.absolutePath(), fileContent, rules, ignoreHeaderComments(), tsConfigs);
       AnalysisResponse response = eslintBridgeServer.analyzeTypeScript(request);
       processResponse(file, response);
